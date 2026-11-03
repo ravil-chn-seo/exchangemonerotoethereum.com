@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://exchangemonerotoethereum.com/sitemap.xml

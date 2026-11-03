@@ -239,8 +239,11 @@ def table_rows():
         svc = f'<strong>{e(r[1])}</strong>' + ('<span class="pick">Our pick</span>' if first else '')
         cells.append(f'<th scope="row" class="c-svc s2">{svc}</th>')
         for i, v in enumerate(r[2:], start=2):
-            cls = 'c-score' if i == len(r) - 1 else ''
-            cells.append(f'<td class="{cls}">{e(v)}</td>')
+            if i == len(r) - 1:
+                pct = int(round(float(v.split('/')[0]) * 10))
+                cells.append(f'<td class="c-score" style="--s:{pct}%">{e(v)}</td>')
+            else:
+                cells.append(f'<td>{e(v)}</td>')
         out.append(f'<tr class="{"top" if first else ""}">{"".join(cells)}</tr>')
     return '\n'.join(out)
 
@@ -251,6 +254,7 @@ def review_card(r):
     cta = f'<div class="review-cta">{cn_link(r["cta"], "review")}</div>' if r.get('cta') else ''
     feat = ' featured' if r.get('featured') else ''
     return f'''<article class="review{feat}" id="{r['id']}">
+  <div class="review-bar" aria-hidden="true"><i></i><i></i><i></i><span>review/{r['name'].lower()}.md</span></div>
   <div class="review-rank" aria-hidden="true">{r['rank']}</div>
   <div class="review-body">
     <p class="award">{e(r['award'])}</p>
@@ -292,7 +296,7 @@ html = f'''<!doctype html>
 <meta name="description" content="{DESCRIPTION}">
 <link rel="canonical" href="{SITE}">
 <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
-<meta name="theme-color" content="#F7F8FA">
+<meta name="theme-color" content="#07090B">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta property="og:type" content="website">
 <meta property="og:title" content="{TITLE}">
@@ -335,7 +339,7 @@ html = f'''<!doctype html>
   <div class="wrap hero-grid">
     <div class="hero-copy">
       <p class="label"><i aria-hidden="true"></i>Independently scored using a published methodology</p>
-      <h1 id="h1">Best Ways to Exchange Monero to Ethereum (XMR to ETH)</h1>
+      <h1 id="h1">Best Ways to Exchange <span class="t-xmr">Monero</span> to <span class="t-eth">Ethereum</span> (XMR to ETH)</h1>
       <p class="lead"><a href="{CN}" target="_blank" rel="{CN_REL}" data-cta="hero">ChangeNOW is our best overall choice</a> for exchanging Monero to Ethereum. It combines a direct three-step swap flow with fixed and floating rate options, upfront pricing, broad asset coverage and 24/7 support. Among the five services reviewed, it offers the strongest overall balance of route availability, transparency, speed and ease of use.</p>
       <ul class="chips">
         <li>Best overall score: 9.4/10</li>
@@ -350,7 +354,9 @@ html = f'''<!doctype html>
       <p class="micro">Last reviewed: {REVIEWED}. Pair availability, minimum amounts and estimates can change. Check the live exchange form before sending funds.</p>
     </div>
     <a class="xcard" href="{CN}" target="_blank" rel="{CN_REL}" data-cta="hero" aria-label="Open the live XMR to ETH exchange form on ChangeNOW">
+      <span class="xbar" aria-hidden="true"><i></i><i></i><i></i><em>route / xmr-eth</em></span>
       <span class="xcard-title">XMR to ETH exchange</span>
+      <span class="route" aria-hidden="true"><i class="node n-xmr">XMR</i><i class="wire"><b></b><b></b><b></b></i><i class="node n-eth">ETH</i></span>
       <span class="field">
         <span class="field-text"><small>You send</small><b>XMR — Monero</b></span>
         <span class="coin coin-xmr" aria-hidden="true">XMR</span>
@@ -606,6 +612,16 @@ html = f'''<!doctype html>
 </body>
 </html>
 '''
+
+kickers = {
+    'comparison-h': '01 / comparison', 'why-h': '02 / verdict', 'reviews-h': '03 / ranking',
+    'meth-h': '04 / methodology', 'how-h': '05 / execution', 'vs-h': '06 / chains',
+    'rates-h': '07 / rates', 'safety-h': '08 / safety', 'faq-h': '09 / faq',
+}
+for hid, label in kickers.items():
+    tag = f'<h2 id="{hid}">'
+    assert tag in html, hid
+    html = html.replace(tag, f'<p class="kicker" aria-hidden="true">{label}</p>{tag}', 1)
 
 # ---------------------------------------------------------------- write
 
